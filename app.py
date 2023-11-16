@@ -30,15 +30,26 @@ def hello(name):
     listOfNames = [name, "Chums", "Chester"]
     return render_template('name.html', name=name, nameList=listOfNames)
 
-@app.route('/visitor>')
-def wat(name):
-    return render_template('visitors.html')
+@app.route('/visitor')
+def visitors():
+    people = Visitor.query.all()
+    return render_template('visitors.html', people = people)
 
 @app.route('/form', methods=['GET', 'POST'])
 def formDemo(name=None):
     if request.method == 'POST':
         name=request.form['name']
+        #check if user is in the database
+        visitor = Visitor.query.get(name)
+        if visitor == None:
+            # add Visitor to the database
+            visitor = Visitor(username = name)
+            db.session.add(visitor)
+        else:
+            visitor.numVisits+=1
+    db.session.commit()
     return render_template('form.html', name=name)
+
 
 # Add the option to run this file directly
 if __name__ == "__main__":
